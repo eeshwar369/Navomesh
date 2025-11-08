@@ -5,6 +5,26 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18.20.6-green)](https://nodejs.org/)
 [![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://www.python.org/)
 
+---
+
+## 🌟 **[🚀 TRY OUR LIVE DEPLOYMENT!](https://navonmesh-2025.vercel.app/)**
+
+### **Advanced AI Parking Recommendations System with Chat Support**
+
+**🔗 Live Demo:** **[https://navonmesh-2025.vercel.app/](https://navonmesh-2025.vercel.app/)**
+
+✨ **Experience these features live:**
+- 🤖 **AI-Powered Parking Recommendations** - Smart suggestions based on real-time data
+- 💬 **Real-Time Chat Support** - Get instant help from our AI assistant
+- 🗺️ **Geo-Tagged Traffic Monitoring** - View traffic zones with precise GPS coordinates
+- 📊 **ML-Based Congestion Predictions** - 85-93% accuracy in traffic forecasting
+- 🎯 **Smart Route Planning** - Find the fastest route to available parking
+- 🏆 **Gamification & Rewards** - Earn points for contributing data
+
+**✅ No installation required • ✅ Works on any device • ✅ Production-ready deployment**
+
+---
+
 > **SmartPark AI** is an intelligent urban parking management platform that leverages real-time data, crowdsourcing, and machine learning to reduce traffic congestion, save fuel, and improve urban mobility. Built for the Navomesh 2025 Hackathon.
 
 ## 📋 Table of Contents

@@ -46,4 +46,9 @@ export class RegisterComponent {
       }
     });
   }
+
+  openAdvancedModel(): void {
+    // Open advanced model in new tab
+    window.open('https://navonmesh-2025.vercel.app/', '_blank');
+  }
 }

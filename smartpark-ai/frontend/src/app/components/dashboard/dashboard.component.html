@@ -5,6 +5,12 @@
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <h1 class="text-2xl font-bold text-gray-900">🚦 SmartPark AI</h1>
+          <!-- Live Geo-Tagging Indicator -->
+          @if (trafficZones().length > 0) {
+            <span class="ml-4 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full animate-pulse">
+              🗺️ Geo-Tagging Active • {{ trafficZones().length }} Zones
+            </span>
+          }
         </div>
         <div class="flex items-center space-x-4">
           <span class="text-sm text-gray-700">Welcome, {{ authService.currentUser()?.name }}</span>
@@ -18,6 +24,34 @@
       </div>
     </div>
   </nav>
+
+  <!-- Advanced Model CTA Banner -->
+  <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-4 py-3 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 animate-pulse" 
+       (click)="openAdvancedModel()">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl">🚀</span>
+        <div>
+          <p class="font-bold text-lg">Try Our Advanced AI Model for Parking Recommendations!</p>
+          <p class="text-xs opacity-90">✨ Enhanced predictions • 💬 Chat support • 🗺️ Real-time geo-tagging • Click to experience now!</p>
+        </div>
+      </div>
+      <button class="bg-white text-purple-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg">
+        Try Now →
+      </button>
+    </div>
+  </div>
+
+  <!-- Feature Banner for Demo -->
+  @if (trafficZones().length > 0) {
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-center">
+      <p class="text-sm font-medium">
+        ✨ <strong>Geo-Mapping Live:</strong> {{ trafficZones().length }} traffic zones with real GPS coordinates • 
+        Click any colored circle on map for predictions • 
+        AI-powered congestion forecasting active
+      </p>
+    </div>
+  }
 
   <div class="flex h-[calc(100vh-4rem)]">
     <!-- Sidebar -->
@@ -87,10 +121,25 @@
     <div class="flex-1 relative">
       <div id="map" class="w-full h-full"></div>
       
+      <!-- Traffic Toggle Control -->
+      <div class="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg">
+        <button 
+          (click)="toggleTrafficPredictions()" 
+          class="flex items-center space-x-2 px-4 py-2 rounded transition-colors"
+          [class.bg-blue-600]="showTrafficPredictions()"
+          [class.text-white]="showTrafficPredictions()"
+          [class.bg-gray-200]="!showTrafficPredictions()"
+          [class.text-gray-700]="!showTrafficPredictions()"
+        >
+          <span>🚦</span>
+          <span class="text-sm font-medium">Traffic Predictions</span>
+        </button>
+      </div>
+
       <!-- Map Legend -->
-      <div class="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
-        <h3 class="font-bold text-sm mb-2">Legend</h3>
-        <div class="space-y-2 text-xs">
+      <div class="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg max-w-xs">
+        <h3 class="font-bold text-sm mb-2">🅿️ Parking Legend</h3>
+        <div class="space-y-2 text-xs mb-4">
           <div class="flex items-center">
             <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
             <span>Available (&lt;50%)</span>
@@ -112,7 +161,114 @@
             <span>Your Location</span>
           </div>
         </div>
+        
+        @if (showTrafficPredictions()) {
+          <div class="border-t pt-3 mt-3">
+            <h3 class="font-bold text-sm mb-2">🚦 Traffic Predictions</h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center">
+                <div class="w-4 h-4 rounded-full bg-green-500 mr-2 flex items-center justify-center text-white text-[8px]">✓</div>
+                <span>Low Congestion</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2 flex items-center justify-center text-white text-[8px]">⚠</div>
+                <span>Medium Congestion</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 rounded-full bg-orange-500 mr-2 flex items-center justify-center text-white text-[8px]">⚠</div>
+                <span>High Congestion</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 rounded-full bg-red-500 mr-2 flex items-center justify-center text-white text-[8px]">✖</div>
+                <span>Critical Congestion</span>
+              </div>
+            </div>
+          </div>
+        }
       </div>
+
+      <!-- Traffic Zone Info Panel - ENHANCED FOR DEMO -->
+      @if (showTrafficInfo() && selectedTrafficZone()) {
+        <div class="absolute bottom-4 right-4 bg-white p-5 rounded-2xl shadow-2xl max-w-sm border-2 border-blue-500 animate-slideUp">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-bold text-lg text-gray-900">🚦 {{ selectedTrafficZone().zone.name }}</h3>
+              <p class="text-xs text-gray-500 mt-1">📍 Geo-Tagged Traffic Zone</p>
+            </div>
+            <button (click)="closeTrafficInfo()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+          </div>
+          
+          <!-- GPS Coordinates Banner -->
+          <div class="bg-blue-50 px-3 py-2 rounded-lg mb-3 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">📌 GPS Coordinates:</span>
+              <span class="font-mono font-semibold text-blue-700">
+                {{ selectedTrafficZone().zone.latitude }}, {{ selectedTrafficZone().zone.longitude }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between items-center py-2 border-b">
+              <span class="text-gray-600 font-medium">Zone Code:</span>
+              <span class="font-bold text-blue-600">{{ selectedTrafficZone().zone.code }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+              <span class="text-gray-600 font-medium">Area:</span>
+              <span class="font-semibold">{{ selectedTrafficZone().zone.area }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+              <span class="text-gray-600 font-medium">Distance:</span>
+              <span class="font-semibold text-green-600">🎯 {{ selectedTrafficZone().zone.distance }} km</span>
+            </div>
+            
+            <!-- AI Prediction Section -->
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg mt-3">
+              <p class="text-xs font-bold text-purple-700 mb-2">🤖 AI-POWERED PREDICTION</p>
+              
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-700 font-medium">Congestion Level:</span>
+                <span 
+                  class="px-4 py-1 rounded-full text-xs font-bold uppercase shadow-md animate-pulse"
+                  [style.background-color]="selectedTrafficZone().prediction.color"
+                  [class.text-white]="true"
+                >
+                  {{ selectedTrafficZone().prediction.predicted_congestion }}
+                </span>
+              </div>
+              
+              @if (selectedTrafficZone().prediction.predicted_speed) {
+                <div class="flex justify-between items-center py-2 border-t border-purple-200">
+                  <span class="text-gray-700">⚡ Avg Speed:</span>
+                  <span class="font-bold text-lg">{{ selectedTrafficZone().prediction.predicted_speed }} <span class="text-xs">km/h</span></span>
+                </div>
+              }
+              
+              @if (selectedTrafficZone().prediction.predicted_vehicle_count) {
+                <div class="flex justify-between items-center py-2 border-t border-purple-200">
+                  <span class="text-gray-700">🚗 Vehicle Count:</span>
+                  <span class="font-bold text-lg">~{{ selectedTrafficZone().prediction.predicted_vehicle_count }}</span>
+                </div>
+              }
+              
+              @if (selectedTrafficZone().prediction.confidence_score) {
+                <div class="mt-2 pt-2 border-t border-purple-200">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-gray-700 text-xs">ML Confidence:</span>
+                    <span class="font-bold text-purple-700">{{ (selectedTrafficZone().prediction.confidence_score * 100).toFixed(0) }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-1000"
+                      [style.width.%]="selectedTrafficZone().prediction.confidence_score * 100"
+                    ></div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
   </div>
 

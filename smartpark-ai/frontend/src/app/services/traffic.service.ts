@@ -38,4 +38,32 @@ export class TrafficService {
   getRealTimeTraffic(): Observable<any> {
     return this.http.get(`${this.apiUrl}/traffic/realtime`);
   }
+
+  getTrafficZones(area?: string): Observable<any> {
+    let params = new HttpParams();
+    if (area) params = params.set('area', area);
+    
+    return this.http.get(`${this.apiUrl}/traffic/zones`, { params });
+  }
+
+  getGeoTaggedPredictions(lat: number, lng: number, radius: number = 10, hour?: number, day?: number): Observable<any> {
+    let params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lng', lng.toString())
+      .set('radius', radius.toString());
+    
+    if (hour !== undefined) params = params.set('hour', hour.toString());
+    if (day !== undefined) params = params.set('day', day.toString());
+    
+    return this.http.get(`${this.apiUrl}/traffic/predictions/geo`, { params });
+  }
+
+  getZonePrediction(zoneId: number, hours: number = 6): Observable<any> {
+    const params = new HttpParams().set('hours', hours.toString());
+    return this.http.get(`${this.apiUrl}/traffic/zones/${zoneId}/predictions`, { params });
+  }
+
+  getTrafficRoutes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/traffic/routes`);
+  }
 }

@@ -111,3 +111,82 @@ CREATE TABLE IF NOT EXISTS user_rewards (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_points (points DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Geo-Tagged Traffic Zones for Prediction
+CREATE TABLE IF NOT EXISTS traffic_zones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_name VARCHAR(255) NOT NULL,
+    zone_code VARCHAR(50) UNIQUE NOT NULL,
+    center_latitude DECIMAL(10, 8) NOT NULL,
+    center_longitude DECIMAL(11, 8) NOT NULL,
+    radius_meters INT DEFAULT 500,
+    area VARCHAR(100),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_zone_code (zone_code),
+    INDEX idx_location (center_latitude, center_longitude),
+    INDEX idx_area (area)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Traffic Predictions with Geo-Tagging
+CREATE TABLE IF NOT EXISTS traffic_predictions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_id INT NOT NULL,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    predicted_congestion ENUM('low', 'medium', 'high', 'critical') NOT NULL,
+    predicted_speed DECIMAL(5, 2),
+    predicted_vehicle_count INT,
+    prediction_hour INT NOT NULL,
+    day_of_week INT NOT NULL,
+    confidence_score DECIMAL(5, 4),
+    prediction_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    valid_until TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (zone_id) REFERENCES traffic_zones(id) ON DELETE CASCADE,
+    INDEX idx_zone (zone_id),
+    INDEX idx_location (latitude, longitude),
+    INDEX idx_prediction_time (prediction_hour, day_of_week),
+    INDEX idx_congestion (predicted_congestion),
+    INDEX idx_timestamp (prediction_timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Geo-Tagged Traffic Routes
+CREATE TABLE IF NOT EXISTS traffic_routes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    route_name VARCHAR(255) NOT NULL,
+    start_latitude DECIMAL(10, 8) NOT NULL,
+    start_longitude DECIMAL(11, 8) NOT NULL,
+    end_latitude DECIMAL(10, 8) NOT NULL,
+    end_longitude DECIMAL(11, 8) NOT NULL,
+    route_points JSON,
+    avg_congestion_level ENUM('low', 'medium', 'high', 'critical') DEFAULT 'low',
+    total_distance_km DECIMAL(8, 2),
+    avg_travel_time_minutes INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_start_location (start_latitude, start_longitude),
+    INDEX idx_end_location (end_latitude, end_longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Historical Geo-Tagged Traffic Data for ML Training
+CREATE TABLE IF NOT EXISTS traffic_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_id INT,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    congestion_level ENUM('low', 'medium', 'high', 'critical') NOT NULL,
+    avg_speed DECIMAL(5, 2),
+    vehicle_count INT,
+    hour_of_day INT NOT NULL,
+    day_of_week INT NOT NULL,
+    is_holiday BOOLEAN DEFAULT FALSE,
+    weather_condition VARCHAR(50),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (zone_id) REFERENCES traffic_zones(id) ON DELETE SET NULL,
+    INDEX idx_zone (zone_id),
+    INDEX idx_location (latitude, longitude),
+    INDEX idx_time (hour_of_day, day_of_week),
+    INDEX idx_timestamp (timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
